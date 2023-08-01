@@ -20,18 +20,14 @@ extension ReadResult where R: Receivable {
 
     /// Create a typed read result from raw data.
     init(dataResult: ReadResult<Data?>) {
-        switch dataResult {
-        case .success(let data):
-            if let data = data {
-                do {
-                    self = .success(try R(bluetoothData: data))
-                } catch {
-                    self = .failure(error)
-                }
-            } else {
-                self = .failure(BluejayError.missingData)
-            }
-        case .failure(let error):
+        guard case .success(let data) = dataResult, let data else {
+            self = .failure(BluejayError.missingData)
+            return
+        }
+        
+        do {
+            self = .success(try R(bluetoothData: data))
+        } catch {
             self = .failure(error)
         }
     }
